@@ -8,465 +8,435 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:        #F7F7F5;
-    --surface:   #FFFFFF;
-    --border:    #E2E2DE;
-    --text:      #1A1A18;
-    --muted:     #7A7A74;
-    --accent:    #1A1A18;
+    --bg:#F7F7F5;--surface:#FFFFFF;--border:#E2E2DE;--text:#1A1A18;--muted:#7A7A74;
+    --score-high:#1C7A4A;--score-mid:#B45309;--score-low:#6B7280;
+    --tag-amo:#EEF2FF;--tag-amo-t:#3730A3;--tag-fin:#FFF7ED;--tag-fin-t:#9A3412;
+    --tag-ppp:#F0FDF4;--tag-ppp-t:#166534;--tag-sem:#FDF4FF;--tag-sem-t:#6B21A8;
+    --tag-enr:#FFFBEB;--tag-enr-t:#92400E;--tag-autre:#F9FAFB;--tag-autre-t:#374151;
+    --urg-haute:#FEE2E2;--urg-haute-t:#991B1B;--urg-moy:#FEF3C7;--urg-moy-t:#92400E;
+    --urg-fai:#F0FDF4;--urg-fai-t:#166534;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+  header{background:var(--text);color:#fff;padding:28px 40px 0}
+  .header-top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding-bottom:20px}
+  .header-left h1{font-size:18px;font-weight:600;letter-spacing:-0.01em}
+  .header-left p{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px;letter-spacing:0.04em;text-transform:uppercase}
+  .header-stats{display:flex;gap:32px;text-align:right}
+  .stat-block span{display:block;font-family:'IBM Plex Mono',monospace}
+  .stat-val{font-size:28px;font-weight:500;letter-spacing:-0.02em;color:#fff}
+  .stat-lbl{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px}
+  .tabs{display:flex;border-top:1px solid rgba(255,255,255,0.12)}
+  .tab-btn{font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:12px 24px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+  .tab-btn:hover{color:rgba(255,255,255,0.8)}
+  .tab-btn.active{color:#fff;border-bottom-color:#fff}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+  .toolbar{padding:16px 40px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:10}
+  .toolbar-label{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-right:4px}
+  .filter-btn{font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+  .filter-btn:hover,.filter-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+  .sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+  main{padding:28px 40px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
+  .empty-state{grid-column:1/-1;text-align:center;padding:80px 0;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:14px;transition:box-shadow .15s,transform .15s}
+  .card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.07);transform:translateY(-1px)}
+  .card[data-hidden="true"]{display:none}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .card-badges{display:flex;gap:6px;flex-wrap:wrap}
+  .badge{font-size:10px;font-weight:500;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap}
+  .badge-amo{background:var(--tag-amo);color:var(--tag-amo-t)}
+  .badge-fin{background:var(--tag-fin);color:var(--tag-fin-t)}
+  .badge-ppp{background:var(--tag-ppp);color:var(--tag-ppp-t)}
+  .badge-sem{background:var(--tag-sem);color:var(--tag-sem-t)}
+  .badge-enr{background:var(--tag-enr);color:var(--tag-enr-t)}
+  .badge-autre{background:var(--tag-autre);color:var(--tag-autre-t)}
+  .badge-urg-haute{background:var(--urg-haute);color:var(--urg-haute-t)}
+  .badge-urg-moy{background:var(--urg-moy);color:var(--urg-moy-t)}
+  .badge-urg-fai{background:var(--urg-fai);color:var(--urg-fai-t)}
+  .badge-enr-boost{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+  .score-ring{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;min-width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+  .score-ring::after{content:'/10';font-size:8px;position:absolute;bottom:6px;right:4px;opacity:0.6}
+  .score-high{background:#DCFCE7;color:var(--score-high)}
+  .score-mid{background:#FEF3C7;color:var(--score-mid)}
+  .score-low{background:#F3F4F6;color:var(--score-low)}
+  .card-objet{font-size:13px;font-weight:500;line-height:1.45}
+  .card-acheteur{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .card-acheteur::before{content:'';display:inline-block;width:4px;height:4px;background:var(--border);border-radius:50%;flex-shrink:0}
+  .card-resume{font-size:12px;color:#4A4A46;line-height:1.55;padding:10px 12px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+  .card-alert{font-size:11px;color:#92400E;background:#FFFBEB;border-radius:4px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start}
+  .card-alert::before{content:'⚠';flex-shrink:0}
+  .card-meta{display:flex;gap:16px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border);justify-content:space-between;align-items:center}
+  .meta-item{display:flex;flex-direction:column;gap:1px}
+  .meta-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)}
+  .meta-val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500}
+  .card-link{font-size:11px;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:4px 10px;border-radius:4px;transition:all .12s;white-space:nowrap}
+  .card-link:hover{background:var(--text);color:#fff;border-color:var(--text)}
 
-    --score-high:   #1C7A4A;
-    --score-mid:    #B45309;
-    --score-low:    #6B7280;
-
-    --tag-amo:     #EEF2FF; --tag-amo-t:     #3730A3;
-    --tag-fin:     #FFF7ED; --tag-fin-t:     #9A3412;
-    --tag-ppp:     #F0FDF4; --tag-ppp-t:     #166534;
-    --tag-sem:     #FDF4FF; --tag-sem-t:     #6B21A8;
-    --tag-enr:     #FFFBEB; --tag-enr-t:     #92400E;
-    --tag-autre:   #F9FAFB; --tag-autre-t:   #374151;
-
-    --urg-haute:  #FEE2E2; --urg-haute-t:  #991B1B;
-    --urg-moy:    #FEF3C7; --urg-moy-t:    #92400E;
-    --urg-fai:    #F0FDF4; --urg-fai-t:    #166534;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'IBM Plex Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  /* ── Header ── */
-  header {
-    background: var(--text);
-    color: #fff;
-    padding: 28px 40px 24px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
-  }
-  .header-left h1 {
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .header-left p {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: rgba(255,255,255,0.45);
-    margin-top: 4px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .header-stats {
-    display: flex;
-    gap: 32px;
-    text-align: right;
-  }
-  .stat-block span {
-    display: block;
-    font-family: 'IBM Plex Mono', monospace;
-  }
-  .stat-block .stat-val {
-    font-size: 28px;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    color: #fff;
-  }
-  .stat-block .stat-lbl {
-    font-size: 10px;
-    color: rgba(255,255,255,0.4);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 2px;
-  }
-
-  /* ── Toolbar ── */
-  .toolbar {
-    padding: 16px 40px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .toolbar-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    margin-right: 4px;
-  }
-  .filter-btn {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 12px;
-    padding: 5px 12px;
-    border-radius: 100px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all .15s;
-  }
-  .filter-btn:hover, .filter-btn.active {
-    background: var(--text);
-    color: #fff;
-    border-color: var(--text);
-  }
-  .sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
-
-  /* ── Grid ── */
-  main {
-    padding: 28px 40px 60px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 16px;
-  }
-
-  .empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 80px 0;
-    color: var(--muted);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-  }
-
-  /* ── Card ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    transition: box-shadow .15s, transform .15s;
-  }
-  .card:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-    transform: translateY(-1px);
-  }
-  .card[data-hidden="true"] { display: none; }
-
-  /* Card top row */
-  .card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .card-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-
-  .badge {
-    font-size: 10px;
-    font-weight: 500;
-    padding: 3px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
-  .badge-amo   { background: var(--tag-amo);   color: var(--tag-amo-t); }
-  .badge-fin   { background: var(--tag-fin);   color: var(--tag-fin-t); }
-  .badge-ppp   { background: var(--tag-ppp);   color: var(--tag-ppp-t); }
-  .badge-sem   { background: var(--tag-sem);   color: var(--tag-sem-t); }
-  .badge-enr   { background: var(--tag-enr);   color: var(--tag-enr-t); }
-  .badge-autre { background: var(--tag-autre); color: var(--tag-autre-t); }
-
-  .badge-urg-haute { background: var(--urg-haute); color: var(--urg-haute-t); }
-  .badge-urg-moy   { background: var(--urg-moy);   color: var(--urg-moy-t); }
-  .badge-urg-fai   { background: var(--urg-fai);   color: var(--urg-fai-t); }
-
-  /* Score */
-  .score-ring {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 20px;
-    font-weight: 500;
-    min-width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
-  }
-  .score-ring::after {
-    content: '/10';
-    font-size: 8px;
-    position: absolute;
-    bottom: 6px;
-    right: 4px;
-    opacity: 0.6;
-  }
-  .score-high { background: #DCFCE7; color: var(--score-high); }
-  .score-mid  { background: #FEF3C7; color: var(--score-mid); }
-  .score-low  { background: #F3F4F6; color: var(--score-low); }
-
-  /* Card body */
-  .card-objet {
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.45;
-    color: var(--text);
-  }
-  .card-acheteur {
-    font-size: 12px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .card-acheteur::before {
-    content: '';
-    display: inline-block;
-    width: 4px;
-    height: 4px;
-    background: var(--border);
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .card-resume {
-    font-size: 12px;
-    color: #4A4A46;
-    line-height: 1.55;
-    padding: 10px 12px;
-    background: var(--bg);
-    border-radius: 4px;
-    border-left: 2px solid var(--border);
-  }
-
-  .card-alert {
-    font-size: 11px;
-    color: #92400E;
-    background: #FFFBEB;
-    border-radius: 4px;
-    padding: 8px 10px;
-    display: flex;
-    gap: 6px;
-    align-items: flex-start;
-  }
-  .card-alert::before { content: '⚠'; flex-shrink: 0; }
-
-  /* Meta row */
-  .card-meta {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-    justify-content: space-between;
-    align-items: center;
-  }
-  .meta-item {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-  .meta-lbl {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-  }
-  .meta-val {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--text);
-    font-weight: 500;
-  }
-  .card-link {
-    font-size: 11px;
-    color: var(--muted);
-    text-decoration: none;
-    border: 1px solid var(--border);
-    padding: 4px 10px;
-    border-radius: 4px;
-    transition: all .12s;
-    white-space: nowrap;
-  }
-  .card-link:hover {
-    background: var(--text);
-    color: #fff;
-    border-color: var(--text);
-  }
-
-  /* ── Responsive ── */
-  @media (max-width: 640px) {
-    header { padding: 20px; flex-direction: column; align-items: flex-start; }
-    .header-stats { text-align: left; }
-    .toolbar { padding: 12px 20px; }
-    main { padding: 16px 20px 40px; grid-template-columns: 1fr; }
-  }
+  /* DCE */
+  .dce-container{max-width:760px;margin:0 auto;padding:32px 40px 60px}
+  .dce-intro{margin-bottom:24px}
+  .dce-intro h2{font-size:16px;font-weight:600;margin-bottom:6px}
+  .dce-intro p{font-size:13px;color:var(--muted)}
+  .key-row{display:flex;gap:8px;margin-bottom:6px;align-items:stretch}
+  .key-row input{flex:1;font-family:'IBM Plex Mono',monospace;font-size:12px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text)}
+  .key-row input:focus{outline:none;border-color:var(--text)}
+  .btn-save{font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:8px 14px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;white-space:nowrap;transition:all .12s}
+  .btn-save:hover{background:var(--text);color:#fff;border-color:var(--text)}
+  .key-status{font-size:11px;font-family:'IBM Plex Mono',monospace}
+  .key-ok{color:#1C7A4A}.key-missing{color:#991B1B}
+  .drop-zone{border:1.5px dashed var(--border);border-radius:6px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;background:var(--bg);margin-bottom:12px}
+  .drop-zone:hover,.drop-zone.drag-over{border-color:var(--text);background:var(--surface)}
+  .drop-zone input{display:none}
+  .drop-icon{font-size:24px;margin-bottom:8px}
+  .drop-title{font-size:14px;font-weight:500;margin-bottom:4px}
+  .drop-sub{font-size:12px;color:var(--muted)}
+  .file-list-dce{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  .file-item-dce{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:8px 12px;font-size:13px}
+  .file-name-dce{flex:1;font-weight:500}
+  .file-size-dce{color:var(--muted);font-size:12px;font-family:'IBM Plex Mono',monospace}
+  .file-rm{cursor:pointer;color:var(--muted);font-size:14px;border:none;background:none;padding:0 2px}
+  .file-rm:hover{color:#991B1B}
+  .btn-analyze{width:100%;padding:11px;background:var(--text);color:#fff;border:none;border-radius:4px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s;margin-bottom:20px}
+  .btn-analyze:hover{opacity:.85}
+  .btn-analyze:disabled{opacity:.4;cursor:not-allowed}
+  .dce-progress{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:20px;font-size:13px}
+  .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .dce-error{background:#FEE2E2;color:#991B1B;border-radius:4px;padding:12px 16px;font-size:13px;margin-bottom:16px}
+  .dce-results{display:flex;flex-direction:column;gap:12px}
+  .res-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .res-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+  .res-hdr:hover{background:var(--bg)}
+  .res-num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px}
+  .n1{background:#EEF2FF;color:#3730A3}.n2{background:#F0FDF4;color:#166534}
+  .n3{background:#FFFBEB;color:#92400E}.n4{background:#FDF4FF;color:#6B21A8}
+  .res-title{font-size:13px;font-weight:500;flex:1}
+  .res-chev{font-size:11px;color:var(--muted);transition:transform .2s}
+  .res-chev.open{transform:rotate(180deg)}
+  .res-body{padding:16px;font-size:13px;line-height:1.65}
+  .res-body.hidden{display:none}
+  .sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .si{background:var(--bg);border-radius:4px;padding:10px 12px}
+  .sl{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:3px}
+  .sv{font-size:13px;font-weight:500}
+  .cr{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .cn{font-size:12px;min-width:200px}
+  .cb{flex:1;height:4px;background:var(--border);border-radius:2px}
+  .cbf{height:4px;background:var(--text);border-radius:2px}
+  .cp{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;min-width:36px;text-align:right}
+  .ps{border-left:2px solid var(--border);padding-left:12px;margin-bottom:10px}
+  .pn{font-size:11px;color:var(--muted);margin-bottom:2px;font-family:'IBM Plex Mono',monospace}
+  .pt{font-size:13px;font-weight:500;margin-bottom:3px}
+  .ph{font-size:12px;color:var(--muted);font-style:italic}
+  .ts{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+  .ts:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+  .tt{font-size:13px;font-weight:500;margin-bottom:6px}
+  .ta{background:var(--bg);border-radius:4px;padding:10px 12px;font-size:12px;color:#4A4A46;font-style:italic;margin-bottom:6px;border-left:2px solid var(--border)}
+  .tq{font-size:12px;color:var(--muted)}
+  .tq ul{padding-left:16px}
+  .tq li{margin-bottom:2px}
+  .ds{margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+  .dl{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:8px}
+  .di{font-size:12px;padding:4px 0 4px 12px;border-left:2px solid var(--border);margin-bottom:4px}
+  .cl{display:flex;flex-direction:column;gap:6px}
+  .ci{display:flex;align-items:flex-start;gap:8px}
+  .ci input{margin-top:2px;flex-shrink:0}
+  .clbl{font-size:13px}
+  .creq{font-size:11px;color:#991B1B;margin-left:4px}
+  .copt{font-size:11px;color:var(--muted);margin-left:4px}
+  .dce-acts{display:flex;gap:8px;margin-top:16px}
+  .btn-da{flex:1;padding:9px;border:1px solid var(--border);border-radius:4px;background:transparent;font-family:'IBM Plex Sans',sans-serif;font-size:13px;cursor:pointer;transition:background .12s}
+  .btn-da:hover{background:var(--bg)}
+  .rb{font-size:13px;line-height:1.6;padding:10px 12px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border);margin-bottom:12px}
+  @media(max-width:640px){header{padding:20px 20px 0}.header-top{flex-direction:column;align-items:flex-start;padding-bottom:16px}.toolbar{padding:12px 20px}main{padding:16px 20px 40px;grid-template-columns:1fr}.dce-container{padding:20px}.sg{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-left">
-    <h1>Veille Marchés Publics</h1>
-    <p>OPTIMA · Mis à jour le {{ date_run }}</p>
+  <div class="header-top">
+    <div class="header-left">
+      <h1>OPTIMA — Veille &amp; Analyse AO</h1>
+      <p>Mis à jour le {{ date_run }}</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat-block"><span class="stat-val">{{ total }}</span><span class="stat-lbl">Opportunités</span></div>
+      <div class="stat-block"><span class="stat-val">{{ avis | selectattr('urgence', 'equalto', 'haute') | list | length }}</span><span class="stat-lbl">Urgentes</span></div>
+    </div>
   </div>
-  <div class="header-stats">
-    <div class="stat-block">
-      <span class="stat-val">{{ total }}</span>
-      <span class="stat-lbl">Opportunités</span>
-    </div>
-    <div class="stat-block">
-      <span class="stat-val">{{ avis | selectattr('urgence', 'equalto', 'haute') | list | length }}</span>
-      <span class="stat-lbl">Urgentes</span>
-    </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('veille',this)">Veille marchés</button>
+    <button class="tab-btn" onclick="switchTab('dce',this)">Analyser un DCE</button>
   </div>
 </header>
 
-<div class="toolbar">
-  <span class="toolbar-label">Filtrer</span>
-  <button class="filter-btn active" data-filter="all">Tous</button>
-  <div class="sep"></div>
-  <button class="filter-btn" data-filter="type:AMO">AMO</button>
-  <button class="filter-btn" data-filter="type:Ingénierie financière">Ing. financière</button>
-  <button class="filter-btn" data-filter="type:PPP/Concession">PPP / Concession</button>
-  <button class="filter-btn" data-filter="type:SEM/Fonds">SEM / Fonds</button>
-  <button class="filter-btn" data-filter="type:ENR-Conseil">ENR</button>
-  <div class="sep"></div>
-  <button class="filter-btn" data-filter="urg:haute">🔴 Urgent</button>
-  <button class="filter-btn" data-filter="urg:moyenne">🟡 Moyen terme</button>
+<!-- TAB VEILLE -->
+<div id="tab-veille" class="tab-panel active">
+  <div class="toolbar">
+    <span class="toolbar-label">Filtrer</span>
+    <button class="filter-btn active" data-filter="all">Tous</button>
+    <div class="sep"></div>
+    <button class="filter-btn" data-filter="type:AMO">AMO</button>
+    <button class="filter-btn" data-filter="type:Ingénierie financière">Ing. financière</button>
+    <button class="filter-btn" data-filter="type:PPP/Concession">PPP / Concession</button>
+    <button class="filter-btn" data-filter="type:SEM/Fonds">SEM / Fonds</button>
+    <button class="filter-btn" data-filter="type:ENR-Conseil">ENR</button>
+    <div class="sep"></div>
+    <button class="filter-btn" data-filter="urg:haute">Urgent</button>
+    <button class="filter-btn" data-filter="enr:1">Solaire / ENR +</button>
+  </div>
+  <main id="grid">
+    {% if avis %}
+      {% for a in avis %}
+      <div class="card" data-type="{{ a.type_mission }}" data-urgence="{{ a.urgence }}" data-enr="{{ '1' if a.enr_boost else '0' }}">
+        <div class="card-top">
+          <div class="card-badges">
+            {% if a.type_mission == 'AMO' %}<span class="badge badge-amo">AMO</span>
+            {% elif a.type_mission == 'Ingénierie financière' %}<span class="badge badge-fin">Ing. financière</span>
+            {% elif a.type_mission in ['PPP/Concession','PPP-Concession'] %}<span class="badge badge-ppp">PPP / Concession</span>
+            {% elif a.type_mission in ['SEM/Fonds','SEM-Fonds'] %}<span class="badge badge-sem">SEM / Fonds</span>
+            {% elif a.type_mission == 'ENR-Conseil' %}<span class="badge badge-enr">ENR</span>
+            {% else %}<span class="badge badge-autre">{{ a.type_mission }}</span>{% endif %}
+            {% if a.urgence == 'haute' %}<span class="badge badge-urg-haute">Urgent</span>
+            {% elif a.urgence == 'moyenne' %}<span class="badge badge-urg-moy">Moyen terme</span>
+            {% else %}<span class="badge badge-urg-fai">Standard</span>{% endif %}
+            {% if a.enr_boost %}<span class="badge badge-enr-boost">ENR +1</span>{% endif %}
+          </div>
+          <div class="score-ring {% if a.score >= 8 %}score-high{% elif a.score >= 6 %}score-mid{% else %}score-low{% endif %}">{{ a.score }}</div>
+        </div>
+        <div>
+          <div class="card-objet">{{ a.objet }}</div>
+          <div class="card-acheteur">{{ a.acheteur.denominationSociale if a.acheteur else 'Acheteur non précisé' }}</div>
+        </div>
+        {% if a.resume %}<div class="card-resume">{{ a.resume }}</div>{% endif %}
+        {% if a.points_attention %}<div class="card-alert">{{ a.points_attention }}</div>{% endif %}
+        <div class="card-meta">
+          <div class="meta-item"><span class="meta-lbl">Montant</span><span class="meta-val">{% if a.montant %}{{ '{:,.0f}'.format(a.montant).replace(',', '\u202f') }} €{% else %}N/C{% endif %}</span></div>
+          <div class="meta-item"><span class="meta-lbl">Procédure</span><span class="meta-val">{{ a.procedure or '—' }}</span></div>
+          <div class="meta-item"><span class="meta-lbl">Date limite</span><span class="meta-val">{{ a.dateLimiteReception or '—' }}</span></div>
+          {% if a.urlAvis %}<a class="card-link" href="{{ a.urlAvis }}" target="_blank" rel="noopener">Voir l'avis →</a>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}<div class="empty-state">Aucune opportunité retenue sur cette période.</div>{% endif %}
+  </main>
 </div>
 
-<main id="grid">
-
-  {% if avis %}
-    {% for a in avis %}
-    {% set score = a.score | int %}
-    {% set type_key = a.type_mission | lower | replace('/', '') | replace(' ', '') | replace('é', 'e') | replace('è', 'e') %}
-    <div class="card"
-         data-type="{{ a.type_mission }}"
-         data-urgence="{{ a.urgence }}">
-
-      <div class="card-top">
-        <div class="card-badges">
-          {% if a.type_mission == 'AMO' %}
-            <span class="badge badge-amo">AMO</span>
-          {% elif a.type_mission == 'Ingénierie financière' %}
-            <span class="badge badge-fin">Ing. financière</span>
-          {% elif a.type_mission == 'PPP/Concession' %}
-            <span class="badge badge-ppp">PPP / Concession</span>
-          {% elif a.type_mission == 'SEM/Fonds' %}
-            <span class="badge badge-sem">SEM / Fonds</span>
-          {% elif a.type_mission == 'ENR-Conseil' %}
-            <span class="badge badge-enr">ENR</span>
-          {% else %}
-            <span class="badge badge-autre">{{ a.type_mission }}</span>
-          {% endif %}
-
-          {% if a.urgence == 'haute' %}
-            <span class="badge badge-urg-haute">Urgent</span>
-          {% elif a.urgence == 'moyenne' %}
-            <span class="badge badge-urg-moy">Moyen terme</span>
-          {% else %}
-            <span class="badge badge-urg-fai">Standard</span>
-          {% endif %}
-        </div>
-
-        <div class="score-ring {% if score >= 8 %}score-high{% elif score >= 6 %}score-mid{% else %}score-low{% endif %}">
-          {{ score }}
-        </div>
-      </div>
-
-      <div>
-        <div class="card-objet">{{ a.objet }}</div>
-        <div class="card-acheteur">{{ a.acheteur.denominationSociale if a.acheteur else 'Acheteur non précisé' }}</div>
-      </div>
-
-      {% if a.resume %}
-      <div class="card-resume">{{ a.resume }}</div>
-      {% endif %}
-
-      {% if a.points_attention %}
-      <div class="card-alert">{{ a.points_attention }}</div>
-      {% endif %}
-
-      <div class="card-meta">
-        <div class="meta-item">
-          <span class="meta-lbl">Montant</span>
-          <span class="meta-val">{% if a.montant %}{{ '{:,.0f}'.format(a.montant).replace(',', ' ') }} €{% else %}N/C{% endif %}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-lbl">Procédure</span>
-          <span class="meta-val">{{ a.procedure or '—' }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-lbl">Date limite</span>
-          <span class="meta-val">{{ a.dateLimiteReception or '—' }}</span>
-        </div>
-        {% if a.urlAvis %}
-        <a class="card-link" href="{{ a.urlAvis }}" target="_blank" rel="noopener">Voir l'avis →</a>
-        {% endif %}
-      </div>
-
+<!-- TAB DCE -->
+<div id="tab-dce" class="tab-panel">
+  <div class="dce-container">
+    <div class="dce-intro">
+      <h2>Analyser un DCE</h2>
+      <p>Dépose le RC et/ou le CCTP pour générer une fiche de synthèse, un plan de mémoire et une trame de réponse adaptée au positionnement OPTIMA.</p>
     </div>
-    {% endfor %}
-
-  {% else %}
-    <div class="empty-state">
-      Aucune opportunité retenue sur cette période.
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:500;margin-bottom:6px">Clé API Anthropic</div>
+      <div class="key-row">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+        <button class="btn-save" onclick="saveKey()">Enregistrer</button>
+      </div>
+      <div id="keyStatus"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Stockée dans ton navigateur uniquement.</div>
     </div>
-  {% endif %}
-
-</main>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="dceFileInput" accept=".pdf" multiple />
+      <div class="drop-icon">📄</div>
+      <div class="drop-title">Glisse tes PDF ici</div>
+      <div class="drop-sub">RC, CCTP, AE — plusieurs fichiers acceptés</div>
+    </div>
+    <div class="file-list-dce" id="dceFileList"></div>
+    <button class="btn-analyze" id="btnAnalyze" disabled>Analyser le DCE</button>
+    <div id="dceProgress" style="display:none"></div>
+    <div id="dceError"></div>
+    <div id="dceResults"></div>
+  </div>
+</div>
 
 <script>
-  const buttons = document.querySelectorAll('.filter-btn');
-  const cards   = document.querySelectorAll('.card');
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
 
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.dataset.filter;
-
-      cards.forEach(card => {
-        if (filter === 'all') {
-          card.dataset.hidden = 'false';
-          return;
-        }
-        const [key, val] = filter.split(':');
-        let match = false;
-        if (key === 'type') match = card.dataset.type === val;
-        if (key === 'urg')  match = card.dataset.urgence === val;
-        card.dataset.hidden = match ? 'false' : 'true';
-      });
-
-      // Afficher empty state si rien
-      const visible = [...cards].filter(c => c.dataset.hidden !== 'true').length;
-      let empty = document.querySelector('.empty-state');
-      if (!empty && visible === 0) {
-        empty = document.createElement('div');
-        empty.className = 'empty-state';
-        empty.textContent = 'Aucune opportunité dans cette catégorie.';
-        document.getElementById('grid').appendChild(empty);
-      } else if (empty && visible > 0) {
-        empty.remove();
-      }
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const f=btn.dataset.filter;
+    document.querySelectorAll('.card').forEach(card=>{
+      if(f==='all'){card.dataset.hidden='false';return;}
+      const[k,v]=f.split(':');
+      let m=false;
+      if(k==='type')m=card.dataset.type===v;
+      if(k==='urg')m=card.dataset.urgence===v;
+      if(k==='enr')m=card.dataset.enr===v;
+      card.dataset.hidden=m?'false':'true';
     });
   });
-</script>
+});
 
+function saveKey(){
+  const v=document.getElementById('apiKeyInput').value.trim();
+  if(v.startsWith('sk-ant-')){
+    localStorage.setItem('optima_key',v);
+    showKS(true);
+    document.getElementById('apiKeyInput').value='';
+    updBtn();
+  } else {
+    document.getElementById('keyStatus').innerHTML='<span class="key-status key-missing">Format invalide</span>';
+  }
+}
+function showKS(ok){
+  document.getElementById('keyStatus').innerHTML=ok
+    ?'<span class="key-status key-ok">✓ Clé enregistrée</span>'
+    :'<span class="key-status key-missing">Aucune clé — renseigne ta clé API Anthropic</span>';
+}
+window.addEventListener('load',()=>{showKS(!!localStorage.getItem('optima_key'));updBtn();});
+
+const dceState={files:[]};
+const dz=document.getElementById('dropZone');
+const fi=document.getElementById('dceFileInput');
+dz.addEventListener('click',()=>fi.click());
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');addF([...e.dataTransfer.files]);});
+fi.addEventListener('change',()=>addF([...fi.files]));
+
+function addF(files){
+  files.filter(f=>f.type==='application/pdf').forEach(f=>{
+    if(!dceState.files.find(x=>x.name===f.name))dceState.files.push(f);
+  });
+  renderFL();
+}
+function removeF(i){dceState.files.splice(i,1);renderFL();}
+function renderFL(){
+  document.getElementById('dceFileList').innerHTML=dceState.files.map((f,i)=>`
+    <div class="file-item-dce">
+      <span>📋</span>
+      <span class="file-name-dce">${f.name}</span>
+      <span class="file-size-dce">${(f.size/1024).toFixed(0)} Ko</span>
+      <button class="file-rm" onclick="removeF(${i})">✕</button>
+    </div>`).join('');
+  updBtn();
+}
+function updBtn(){
+  document.getElementById('btnAnalyze').disabled=dceState.files.length===0||!localStorage.getItem('optima_key');
+}
+
+async function f2b64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+document.getElementById('btnAnalyze').addEventListener('click',async()=>{
+  const apiKey=localStorage.getItem('optima_key');
+  if(!apiKey)return;
+  document.getElementById('btnAnalyze').disabled=true;
+  document.getElementById('dceError').innerHTML='';
+  document.getElementById('dceResults').innerHTML='';
+  const prog=document.getElementById('dceProgress');
+  prog.style.display='block';
+  prog.innerHTML='<div class="dce-progress"><div class="spinner"></div><span>Lecture des documents...</span></div>';
+  try{
+    const contents=[];
+    for(const f of dceState.files){
+      const b=await f2b64(f);
+      contents.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:b}});
+    }
+    prog.innerHTML='<div class="dce-progress"><div class="spinner"></div><span>Analyse Claude en cours — 1 à 2 minutes...</span></div>';
+    const PROMPT=`Tu es expert en réponse aux marchés publics français, spécialisé en conseil, AMO, ingénierie financière, PPP, SEM et ENR.\nAnalyse ce DCE et retourne UNIQUEMENT un JSON valide (pas de markdown) :\n{"synthese":{"objet":"","acheteur":"","procedure":"","deadline":"","montant_estime":"","duree_mission":"","criteres":[{"nom":"Valeur technique","poids":60},{"nom":"Prix","poids":40}],"resume_besoin":""},"plan_memoire":[{"num":"1","titre":"","hint":""}],"trame":[{"titre":"","amorce":"","questions":["",""]}],"checklist":[{"label":"Mémoire technique","required":true}],"differenciants":[""]}\nPour la trame : adapte les amorces au positionnement OPTIMA (ingénierie financière, AMO marchés complexes, PPP/SEM, ENR/solaire, enjeux territoriaux). Sois concret.`;
+    contents.push({type:'text',text:PROMPT});
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-allow-browser':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4000,messages:[{role:'user',content:contents}]})
+    });
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    const raw=data.content[0].text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(raw);
+    window._dce=parsed;
+    renderDCE(parsed);
+  }catch(e){
+    document.getElementById('dceError').innerHTML=`<div class="dce-error">Erreur : ${e.message}</div>`;
+  }finally{
+    prog.style.display='none';
+    updBtn();
+  }
+});
+
+function renderDCE(d){
+  const s=d.synthese||{};
+  const crit=(s.criteres||[]).map(c=>`<div class="cr"><span class="cn">${c.nom}</span><div class="cb"><div class="cbf" style="width:${c.poids}%"></div></div><span class="cp">${c.poids}%</span></div>`).join('');
+  const plan=(d.plan_memoire||[]).map(p=>`<div class="ps"><div class="pn">Section ${p.num}</div><div class="pt">${p.titre}</div><div class="ph">${p.hint}</div></div>`).join('');
+  const trame=(d.trame||[]).map(t=>`<div class="ts"><div class="tt">${t.titre}</div><div class="ta">${t.amorce}</div><div class="tq"><ul>${(t.questions||[]).map(q=>`<li>${q}</li>`).join('')}</ul></div></div>`).join('');
+  const diff=(d.differenciants||[]).map(x=>`<div class="di">${x}</div>`).join('');
+  const chk=(d.checklist||[]).map((c,i)=>`<div class="ci"><input type="checkbox" id="c${i}"><label class="clbl" for="c${i}">${c.label}<span class="${c.required?'creq':'copt'}">${c.required?'obligatoire':'recommandé'}</span></label></div>`).join('');
+
+  document.getElementById('dceResults').innerHTML=`
+    <div class="dce-results">
+      <div class="res-card">
+        <div class="res-hdr" onclick="tgl(this)"><span class="res-num n1">01</span><span class="res-title">Fiche de synthèse</span><span class="res-chev open">▼</span></div>
+        <div class="res-body">
+          <div class="sg">
+            <div class="si"><div class="sl">Acheteur</div><div class="sv">${s.acheteur||'—'}</div></div>
+            <div class="si"><div class="sl">Procédure</div><div class="sv">${s.procedure||'—'}</div></div>
+            <div class="si"><div class="sl">Date limite</div><div class="sv">${s.deadline||'—'}</div></div>
+            <div class="si"><div class="sl">Montant estimé</div><div class="sv">${s.montant_estime||'—'}</div></div>
+            <div class="si"><div class="sl">Durée mission</div><div class="sv">${s.duree_mission||'—'}</div></div>
+            <div class="si"><div class="sl">Objet</div><div class="sv">${s.objet||'—'}</div></div>
+          </div>
+          <div class="rb">${s.resume_besoin||''}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Critères de notation</div>
+          ${crit}
+        </div>
+      </div>
+      <div class="res-card">
+        <div class="res-hdr" onclick="tgl(this)"><span class="res-num n2">02</span><span class="res-title">Plan du mémoire technique</span><span class="res-chev open">▼</span></div>
+        <div class="res-body">${plan}</div>
+      </div>
+      <div class="res-card">
+        <div class="res-hdr" onclick="tgl(this)"><span class="res-num n3">03</span><span class="res-title">Trame de rédaction</span><span class="res-chev open">▼</span></div>
+        <div class="res-body">${trame}${diff?`<div class="ds"><div class="dl">Points différenciants OPTIMA</div>${diff}</div>`:''}</div>
+      </div>
+      <div class="res-card">
+        <div class="res-hdr" onclick="tgl(this)"><span class="res-num n4">04</span><span class="res-title">Checklist des pièces</span><span class="res-chev open">▼</span></div>
+        <div class="res-body"><div class="cl">${chk}</div></div>
+      </div>
+    </div>
+    <div class="dce-acts">
+      <button class="btn-da" onclick="cpyAll()">Copier tout</button>
+      <button class="btn-da" onclick="resetDCE()">Nouvelle analyse</button>
+    </div>`;
+}
+
+function tgl(hdr){
+  hdr.nextElementSibling.classList.toggle('hidden');
+  hdr.querySelector('.res-chev').classList.toggle('open');
+}
+function resetDCE(){dceState.files=[];renderFL();document.getElementById('dceResults').innerHTML='';document.getElementById('dceError').innerHTML='';}
+function cpyAll(){
+  const d=window._dce;if(!d)return;
+  const s=d.synthese||{};
+  let t=`ANALYSE DCE — OPTIMA\n${'='.repeat(40)}\n\nAcheteur : ${s.acheteur}\nObjet : ${s.objet}\nDélai : ${s.deadline}\nMontant : ${s.montant_estime}\n\nBesoin : ${s.resume_besoin}\n\nCritères :\n${(s.criteres||[]).map(c=>`  - ${c.nom} : ${c.poids}%`).join('\n')}\n\nPLAN MÉMOIRE\n${'-'.repeat(20)}\n`;
+  (d.plan_memoire||[]).forEach(p=>t+=`${p.num}. ${p.titre}\n   ${p.hint}\n`);
+  t+=`\nTRAME\n${'-'.repeat(20)}\n`;
+  (d.trame||[]).forEach(x=>{t+=`\n${x.titre}\n${x.amorce}\n`;(x.questions||[]).forEach(q=>t+=`  • ${q}\n`);});
+  t+=`\nCHECKLIST\n${'-'.repeat(20)}\n`;
+  (d.checklist||[]).forEach(c=>t+=`[ ] ${c.label} (${c.required?'obligatoire':'recommandé'})\n`);
+  navigator.clipboard.writeText(t).then(()=>{
+    const btn=document.querySelector('.btn-da');
+    const orig=btn.textContent;btn.textContent='Copié !';
+    setTimeout(()=>btn.textContent=orig,2000);
+  });
+}
+</script>
 </body>
 </html>
-
